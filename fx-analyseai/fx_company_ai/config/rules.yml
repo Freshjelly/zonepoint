@@ -1,0 +1,33 @@
+event_rules:
+  policy: "(rate|hike|cut|QE|QT|policy|利上げ|利下げ|金融政策|声明|minutes|議事要旨|指針)"
+  inflation: "(CPI|PPI|インフレ|消費者物価|物価指数)"
+  jobs: "(NFP|雇用統計|失業率|非農業)"
+  growth: "(GDP|成長率)"
+  speech: "(speech|remarks|発言|講演)"
+  risk: "(geopolit|地政学|リスク|停戦|軍事|制裁)"
+
+hawkish_words:
+  - "hike"
+  - "higher for longer"
+  - "タカ派"
+  - "利上げ"
+  - "インフレ高止まり"
+  - "物価リスク上振れ"
+
+dovish_words:
+  - "cut"
+  - "緩和"
+  - "ハト派"
+  - "利下げ"
+  - "景気減速"
+  - "ディスインフレ"
+
+pair_map:
+  USD: [USDJPY, EURUSD, GBPUSD, AUDUSD, NZDUSD, USDCAD, USDCHF, USDCNH]
+  JPY: [USDJPY, EURJPY, GBPJPY, AUDJPY, NZDJPY, CADJPY, CHFJPY]
+  EUR: [EURUSD, EURJPY, EURGBP, EURAUD, EURNZD, EURCHF, EURCAD]
+  GBP: [GBPUSD, GBPJPY, EURGBP, GBPAUD, GBPNZD, GBPCHF, GBPCAD]
+  AUD: [AUDUSD, AUDJPY, EURAUD, GBPAUD]
+  NZD: [NZDUSD, NZDJPY, EURNZD, GBPNZD]
+  CAD: [USDCAD, CADJPY, EURCAD, GBPCAD]
+  CHF: [USDCHF, CHFJPY, EURCHF, GBPCHF]

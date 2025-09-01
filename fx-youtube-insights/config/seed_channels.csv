@@ -1,0 +1,11 @@
+channel_id,title
+# Replace these with actual FX YouTube channel IDs
+UCdummy001fx,FXトレーダー太郎
+UCdummy002fx,為替予想チャンネル
+UCdummy003fx,ドル円分析ラボ
+UCdummy004fx,FX初心者講座
+UCdummy005fx,テクニカル分析マスター
+# Example real channels (uncomment and replace with actual IDs):
+# UCxxxxxxxxxxxxxx,実際のチャンネル名1
+# UCyyyyyyyyyyyyyy,実際のチャンネル名2
+# UCzzzzzzzzzzzzzz,実際のチャンネル名3

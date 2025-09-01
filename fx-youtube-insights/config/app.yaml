@@ -1,0 +1,75 @@
+# FX YouTube Insights Configuration
+
+# YouTube API Settings
+youtube:
+  # Maximum search results per keyword per run
+  search_limit_per_run: 50
+  # Days to look back for new videos
+  search_days: 14
+  # Batch size for API calls
+  batch_size: 50
+  # Max retries for API errors
+  max_retries: 3
+  # Retry delay in seconds
+  retry_delay: 5
+
+# Analysis Settings
+analysis:
+  # Industry delta threshold for classification (%)
+  industry_delta_threshold: 10.0
+  # Z-score threshold for outlier detection
+  zscore_threshold: 1.0
+  # Minimum videos for valid statistics
+  min_videos_for_stats: 10
+  # Top N videos to show in reports
+  top_n_videos: 20
+
+# Schedule Settings (JST)
+schedule:
+  # Daily snapshot times (24h format)
+  snapshot_times:
+    - "02:00"
+    - "14:00"
+  # Weekly report time (Monday)
+  weekly_report_time: "09:00"
+  # Timezone
+  timezone: "Asia/Tokyo"
+
+# Display Settings
+display:
+  # Date format
+  date_format: "%Y-%m-%d"
+  # Datetime format
+  datetime_format: "%Y-%m-%d %H:%M"
+  # Number format decimals
+  decimal_places: 2
+  # Font for Japanese text
+  font_family: "Zen Kaku Gothic New"
+
+# Discord Settings
+discord:
+  # Enable Discord notifications
+  enabled: true
+  # Message color (hex)
+  embed_color: 0x00ff00
+  # Max title length
+  max_title_length: 100
+
+# Database Settings
+database:
+  # Path to DuckDB file
+  path: "data/analytics.duckdb"
+  # Enable WAL mode
+  wal_mode: true
+  # Checkpoint interval (seconds)
+  checkpoint_interval: 300
+
+# Debug Settings
+debug:
+  # Enable debug logging
+  enabled: false
+  # Use dummy data when API key is missing
+  use_dummy_data: true
+  # Dummy data size
+  dummy_channels: 5
+  dummy_videos_per_channel: 10

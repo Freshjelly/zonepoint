@@ -1,0 +1,38 @@
+version: "3.9"
+
+services:
+  fx-alerts:
+    build:
+      context: ../
+      dockerfile: Dockerfile
+    container_name: fx_alerts
+    env_file:
+      - ../.env
+    environment:
+      - CONFIG_PATH=/app/config/rules.yml
+      - MODE=alerts
+      - LOG_LEVEL=INFO
+      - DRY_RUN=false
+    command: python -m src.main
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python", "-c", "import importlib; importlib.import_module('src.main')"]
+      interval: 60s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+
+  fx-digest:
+    build:
+      context: ../
+      dockerfile: Dockerfile
+    container_name: fx_digest_onetime
+    env_file:
+      - ../.env
+    environment:
+      - CONFIG_PATH=/app/config/rules.yml
+      - MODE=digest
+      - LOG_LEVEL=INFO
+      - DRY_RUN=false
+    command: python -m src.main
+    restart: "no"

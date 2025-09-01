@@ -1,0 +1,18 @@
+feedparser
+requests
+beautifulsoup4
+python-dotenv
+langdetect
+tqdm
+pydantic
+pyyaml
+aiohttp
+discord.py
+
+# 学習/推論（学習マシンのみ必要）
+torch
+transformers
+datasets
+peft
+accelerate
+trl

@@ -1,0 +1,17 @@
+# 日本（一次情報）
+https://www.boj.or.jp/en/rss/whatsnew.xml
+https://www.fsa.go.jp/fsaEnNewsList_rss2.xml
+https://www.mof.go.jp/english/news.rss
+
+# 海外・中銀/国際機関
+https://www.federalreserve.gov/feeds/press_all.xml
+https://www.bankofengland.co.uk/rss
+https://www.bis.org/doclist/all_pressrels.rss
+
+# ECB（カテゴリ別RSSはサイトから後で追加）
+# 例: https://www.ecb.europa.eu/press/pressconf/html/index.en.html （RSS一覧から選択）
+
+# 豪RBA（RSS案内ページから必要カテゴリを後で追加）
+
+# FX特化
+https://www.fxstreet.com/rss/news

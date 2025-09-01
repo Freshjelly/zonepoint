@@ -1,0 +1,12 @@
+# Python
+__pycache__/
+*.pyc
+.venv/
+.env
+.out/
+logs/
+out/
+data/seen_urls.sqlite
+
+# OS
+.DS_Store

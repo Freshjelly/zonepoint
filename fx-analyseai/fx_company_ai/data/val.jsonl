@@ -1,0 +1,1 @@
+{"input":{"headline":"Sample headline","body":"Sample body","lang":"en","metrics":{"actual":null,"consensus":null,"previous":null},"time_iso":"2025-08-30T18:00:00Z"},"output":{"summary_ja":"サンプル要約","bias":"中立","pairs":["USDJPY"],"if_then":"様子見","confidence":0.5}}

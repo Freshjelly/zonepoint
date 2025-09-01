@@ -1,0 +1,297 @@
+name: FX YouTube Analytics Pipeline
+
+on:
+  schedule:
+    # Daily snapshots at 02:00 and 14:00 JST (17:00 and 05:00 UTC)
+    - cron: '0 17 * * *'  # 02:00 JST
+    - cron: '0 5 * * *'   # 14:00 JST
+    # Weekly digest on Monday at 09:00 JST (00:00 UTC)
+    - cron: '0 0 * * 1'   # Monday 09:00 JST
+  workflow_dispatch:  # Allow manual triggers
+    inputs:
+      action:
+        description: 'Action to run'
+        required: true
+        default: 'snapshot'
+        type: choice
+        options:
+          - snapshot
+          - rollup
+          - discord
+          - full-pipeline
+
+env:
+  TZ: Asia/Tokyo
+  PYTHON_VERSION: '3.11'
+
+jobs:
+  snapshot:
+    name: 'Data Collection Snapshot'
+    runs-on: ubuntu-latest
+    if: github.event.schedule == '0 17 * * *' || github.event.schedule == '0 5 * * *' || (github.event_name == 'workflow_dispatch' && (github.event.inputs.action == 'snapshot' || github.event.inputs.action == 'full-pipeline'))
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+      
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+      
+      - name: Create data directory
+        run: mkdir -p data logs
+      
+      - name: Set up environment variables
+        run: |
+          echo "TZ=Asia/Tokyo" >> $GITHUB_ENV
+          echo "DB_PATH=data/analytics.duckdb" >> $GITHUB_ENV
+      
+      - name: Run snapshot collection
+        env:
+          YOUTUBE_API_KEY: ${{ secrets.YOUTUBE_API_KEY }}
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+        run: |
+          python scripts/run_snapshot.py
+      
+      - name: Upload database artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: analytics-db-${{ github.run_id }}
+          path: |
+            data/analytics.duckdb
+            logs/*.log
+          retention-days: 7
+      
+      - name: Upload logs
+        uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: snapshot-logs-${{ github.run_id }}
+          path: logs/
+          retention-days: 3
+
+  rollup:
+    name: 'Weekly Metrics Calculation'
+    runs-on: ubuntu-latest
+    if: github.event.schedule == '0 0 * * 1' || (github.event_name == 'workflow_dispatch' && (github.event.inputs.action == 'rollup' || github.event.inputs.action == 'full-pipeline'))
+    needs: [snapshot]
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+      
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+      
+      - name: Create directories
+        run: mkdir -p data logs
+      
+      - name: Download database artifact
+        uses: actions/download-artifact@v3
+        continue-on-error: true
+        with:
+          name: analytics-db-${{ github.run_id }}
+          path: .
+      
+      - name: Set up environment variables
+        run: |
+          echo "TZ=Asia/Tokyo" >> $GITHUB_ENV
+          echo "DB_PATH=data/analytics.duckdb" >> $GITHUB_ENV
+      
+      - name: Run weekly rollup
+        env:
+          YOUTUBE_API_KEY: ${{ secrets.YOUTUBE_API_KEY }}
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+        run: |
+          python scripts/run_rollup.py
+      
+      - name: Upload updated database
+        uses: actions/upload-artifact@v3
+        with:
+          name: analytics-db-with-rollup-${{ github.run_id }}
+          path: |
+            data/analytics.duckdb
+            logs/*.log
+          retention-days: 7
+
+  discord-report:
+    name: 'Discord Weekly Report'
+    runs-on: ubuntu-latest
+    if: github.event.schedule == '0 0 * * 1' || (github.event_name == 'workflow_dispatch' && (github.event.inputs.action == 'discord' || github.event.inputs.action == 'full-pipeline'))
+    needs: [rollup]
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+      
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+      
+      - name: Create directories
+        run: mkdir -p data logs
+      
+      - name: Download database artifact
+        uses: actions/download-artifact@v3
+        continue-on-error: true
+        with:
+          name: analytics-db-with-rollup-${{ github.run_id }}
+          path: .
+      
+      - name: Set up environment variables
+        run: |
+          echo "TZ=Asia/Tokyo" >> $GITHUB_ENV
+          echo "DB_PATH=data/analytics.duckdb" >> $GITHUB_ENV
+      
+      - name: Send Discord report
+        env:
+          YOUTUBE_API_KEY: ${{ secrets.YOUTUBE_API_KEY }}
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+        run: |
+          python scripts/post_weekly_digest.py
+      
+      - name: Upload final logs
+        uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: discord-logs-${{ github.run_id }}
+          path: logs/
+          retention-days: 3
+
+  # Standalone jobs for manual execution
+  manual-snapshot:
+    name: 'Manual Snapshot Collection'
+    runs-on: ubuntu-latest
+    if: github.event_name == 'workflow_dispatch' && github.event.inputs.action == 'snapshot'
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+      
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+      
+      - name: Create directories
+        run: mkdir -p data logs
+      
+      - name: Run snapshot
+        env:
+          YOUTUBE_API_KEY: ${{ secrets.YOUTUBE_API_KEY }}
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+        run: |
+          python scripts/run_snapshot.py
+      
+      - name: Upload results
+        uses: actions/upload-artifact@v3
+        with:
+          name: manual-snapshot-${{ github.run_id }}
+          path: |
+            data/
+            logs/
+          retention-days: 7
+
+  manual-rollup:
+    name: 'Manual Weekly Rollup'
+    runs-on: ubuntu-latest
+    if: github.event_name == 'workflow_dispatch' && github.event.inputs.action == 'rollup'
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+      
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+      
+      - name: Create directories
+        run: mkdir -p data logs
+      
+      - name: Run rollup
+        env:
+          YOUTUBE_API_KEY: ${{ secrets.YOUTUBE_API_KEY }}
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+        run: |
+          python scripts/run_rollup.py
+      
+      - name: Upload results
+        uses: actions/upload-artifact@v3
+        with:
+          name: manual-rollup-${{ github.run_id }}
+          path: |
+            data/
+            logs/
+          retention-days: 7
+
+  manual-discord:
+    name: 'Manual Discord Report'
+    runs-on: ubuntu-latest
+    if: github.event_name == 'workflow_dispatch' && github.event.inputs.action == 'discord'
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+      
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+      
+      - name: Create directories
+        run: mkdir -p data logs
+      
+      - name: Send Discord report
+        env:
+          YOUTUBE_API_KEY: ${{ secrets.YOUTUBE_API_KEY }}
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+        run: |
+          python scripts/post_weekly_digest.py
+      
+      - name: Upload results
+        uses: actions/upload-artifact@v3
+        with:
+          name: manual-discord-${{ github.run_id }}
+          path: logs/
+          retention-days: 3

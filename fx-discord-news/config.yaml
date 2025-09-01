@@ -1,0 +1,65 @@
+# 許可通貨ペアリスト（主要ペアのみ）
+pairs_allowlist:
+  - USDJPY
+  - EURUSD
+  - GBPUSD
+  - AUDUSD
+  - USDCHF
+  - USDCAD
+  - NZDUSD
+  - EURJPY
+  - GBPJPY
+  - AUDJPY
+  - EURAUD
+  - EURGBP
+
+# インパクトスコア閾値
+impact_thresholds:
+  breaking: 60    # 速報配信の閾値
+  digest: 40      # ダイジェスト配信の閾値
+
+# ペアスコア閾値（速報配信時に適用）
+pair_score_threshold: 50
+
+# 配信スケジュール（JST）
+schedule:
+  morning_digest_jst: "06:00"
+  night_digest_jst: "22:00"
+  breaking_check_interval_minutes: 5  # 速報チェック間隔
+
+# LLM設定
+llm:
+  provider: "${PROVIDER}"  # 環境変数から取得
+  model:
+    anthropic: "claude-3-5-sonnet-latest"
+    openai: "gpt-4o-mini"
+  max_tokens_summary: 600
+  max_tokens_action: 400
+  temperature: 0.3
+
+# RSSフィード
+feeds:
+  - "https://www.fxstreet.com/rss"
+  - "https://investinglive.com/feed/"  # Updated from forexlive.com redirect
+  # - "https://www.reuters.com/markets/currencies/rss"  # Disabled: 401 Forbidden
+  # - "https://www.dailyfx.com/feeds/all"  # Disabled: Redirects to non-RSS page
+  - "https://www.investing.com/rss/news_14.rss"
+
+# 免責事項
+disclaimer: "本投稿は教育目的であり、投資助言ではありません。最終判断はご自身で。"
+
+# キャッシュ設定
+cache:
+  ttl_hours: 24  # 重複チェック用キャッシュの有効期限
+  max_entries: 1000  # 最大キャッシュエントリ数
+
+# 言語設定
+language:
+  preferred: "ja"  # 優先言語
+  translate_threshold: 0.7  # 翻訳が必要な言語検出信頼度閾値
+
+# リトライ設定
+retry:
+  max_attempts: 3
+  wait_exponential_multiplier: 2
+  wait_exponential_max: 30

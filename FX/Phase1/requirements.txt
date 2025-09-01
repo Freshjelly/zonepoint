@@ -1,0 +1,8 @@
+requests
+feedparser
+readability-lxml
+beautifulsoup4
+langdetect
+tldextract
+python-dotenv
+lxml

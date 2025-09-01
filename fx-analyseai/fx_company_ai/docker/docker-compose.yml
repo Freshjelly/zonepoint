@@ -1,0 +1,43 @@
+
+services:
+  fx-alerts:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.app
+    container_name: fx_alerts
+    env_file:
+      - /home/hyuga/zonepoint/fx-analyseai/.env
+      - /home/hyuga/zonepoint/fx-analyseai/.env
+      - ../.env
+    environment:
+      MODE: "alerts"
+      INTERVAL_SECONDS: "300"   # 5分
+      CONFIG_PATH: "/app/config/rules.yml"
+    volumes:
+      - ../data:/app/data
+    restart: unless-stopped
+    command: ["/app/docker/entry_alerts.sh"]
+    healthcheck:
+      test: ["CMD-SHELL", "python -c 'import feedparser,sys; sys.exit(0)'"]
+      interval: 60s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+
+  # ダイジェストは「1回実行で終了」するジョブ。
+  # 毎朝の実行はホスト側の cron から: `docker compose run --rm fx-digest`
+  fx-digest:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.app
+    container_name: fx_digest_onetime
+    env_file:
+      - /home/hyuga/zonepoint/fx-analyseai/.env
+      - /home/hyuga/zonepoint/fx-analyseai/.env
+      - ../.env
+    environment:
+      MODE: "digest"
+      CONFIG_PATH: "/app/config/rules.yml"
+    volumes:
+      - ../data:/app/data
+    command: ["python","-m","src.main"]

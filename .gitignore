@@ -1,0 +1,85 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Virtual Environments
+.env
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+*/.venv/
+*/venv/
+.venv/
+venv/
+
+# PyCharm
+.idea/
+
+# VS Code
+.vscode/
+
+# Jupyter Notebooks
+.ipynb_checkpoints
+
+# DS_Store
+.DS_Store
+
+# Environment variables
+.env
+*.env
+!.env.example
+
+# Logs
+*.log
+logs/
+
+# Database
+*.db
+*.sqlite
+*.sqlite3
+
+# Large binaries and libraries
+*.so
+*.dylib
+*.dll
+*.pyd
+
+# CUDA and PyTorch libraries
+*/site-packages/torch/
+*/site-packages/nvidia/
+*/site-packages/triton/
+
+# Node modules
+node_modules/
+
+# Temporary files
+*.tmp
+tmp/
+temp/
+.cache/
+
+# Git pack files
+*.pack
+*.idx
