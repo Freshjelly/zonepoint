@@ -1,0 +1,107 @@
+version: '3.8'
+
+services:
+  # Main development environment
+  zonepoint-dev:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    container_name: zonepoint-dev
+    volumes:
+      - .:/workspace
+      - zonepoint-data:/workspace/data
+      - zonepoint-logs:/workspace/logs
+      - /var/run/docker.sock:/var/run/docker.sock  # For Docker-in-Docker if needed
+    environment:
+      - PYTHONPATH=/workspace
+      - TZ=Asia/Tokyo
+      - ENVIRONMENT=development
+    ports:
+      - "8000:8000"  # For web applications
+      - "8080:8080"  # Alternative port
+      - "3000:3000"  # For frontend development
+      - "5000:5000"  # Flask/FastAPI
+    working_dir: /workspace
+    stdin_open: true
+    tty: true
+    command: /bin/bash
+
+  # FX Analysis AI Service
+  fx-analyseai:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    container_name: fx-analyseai
+    volumes:
+      - ./fx-analyseai:/workspace/fx-analyseai
+      - zonepoint-data:/workspace/data
+      - zonepoint-logs:/workspace/logs
+    environment:
+      - PYTHONPATH=/workspace/fx-analyseai
+      - TZ=Asia/Tokyo
+    working_dir: /workspace/fx-analyseai
+    depends_on:
+      - zonepoint-dev
+    profiles: ["fx-analyseai"]
+
+  # Discord News Service
+  fx-discord-news:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    container_name: fx-discord-news
+    volumes:
+      - ./fx-discord-news:/workspace/fx-discord-news
+      - zonepoint-data:/workspace/data
+      - zonepoint-logs:/workspace/logs
+    environment:
+      - PYTHONPATH=/workspace/fx-discord-news
+      - TZ=Asia/Tokyo
+    working_dir: /workspace/fx-discord-news
+    depends_on:
+      - zonepoint-dev
+    profiles: ["fx-discord-news"]
+
+  # YouTube Insights Service
+  fx-youtube-insights:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    container_name: fx-youtube-insights
+    volumes:
+      - ./fx-youtube-insights:/workspace/fx-youtube-insights
+      - zonepoint-data:/workspace/data
+      - zonepoint-logs:/workspace/logs
+    environment:
+      - PYTHONPATH=/workspace/fx-youtube-insights
+      - TZ=Asia/Tokyo
+    ports:
+      - "8501:8501"  # Streamlit
+    working_dir: /workspace/fx-youtube-insights
+    depends_on:
+      - zonepoint-dev
+    profiles: ["fx-youtube-insights"]
+
+  # Digest Service (Phase 1)
+  fx-digest:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    container_name: fx-digest
+    volumes:
+      - ./fx-analyseai:/workspace/fx-analyseai
+      - zonepoint-data:/workspace/data
+      - zonepoint-logs:/workspace/logs
+    environment:
+      - PYTHONPATH=/workspace
+      - TZ=Asia/Tokyo
+      - DRY_RUN=true
+    working_dir: /workspace/fx-analyseai
+    command: python -m src.main
+    depends_on:
+      - zonepoint-dev
+    profiles: ["digest"]
+
+volumes:
+  zonepoint-data:
+  zonepoint-logs:

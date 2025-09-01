@@ -1,0 +1,40 @@
+# Development Dockerfile for ZonePoint FX Analysis
+FROM python:3.12-slim
+
+# Install system dependencies
+RUN apt-get update && apt-get install -y \
+    git \
+    curl \
+    build-essential \
+    vim \
+    && rm -rf /var/lib/apt/lists/*
+
+# Set working directory
+WORKDIR /workspace
+
+# Copy requirements files
+COPY fx-analyseai/requirements.txt /tmp/fx-analyseai-requirements.txt
+COPY fx-discord-news/pyproject.toml /tmp/fx-discord-news-pyproject.toml
+COPY fx-youtube-insights/requirements.txt /tmp/fx-youtube-insights-requirements.txt
+COPY FX/Phase1/requirements.txt /tmp/phase1-requirements.txt
+COPY FX/Phase2/requirements.txt /tmp/phase2-requirements.txt
+
+# Install Python dependencies
+RUN pip install --no-cache-dir --upgrade pip && \
+    pip install --no-cache-dir -r /tmp/fx-analyseai-requirements.txt && \
+    pip install --no-cache-dir -r /tmp/fx-youtube-insights-requirements.txt && \
+    pip install --no-cache-dir -r /tmp/phase1-requirements.txt && \
+    pip install --no-cache-dir -r /tmp/phase2-requirements.txt
+
+# Copy application code
+COPY . /workspace/
+
+# Set environment variables
+ENV PYTHONPATH=/workspace:$PYTHONPATH
+ENV TZ=Asia/Tokyo
+
+# Create directories for data and logs
+RUN mkdir -p /workspace/data /workspace/logs
+
+# Default command
+CMD ["/bin/bash"]
